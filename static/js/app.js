@@ -146,7 +146,10 @@
     const ranked = ALL_FUNCTIONS.slice().sort((a, b) => functionVector[b] - functionVector[a]);
     ranked.forEach((fn) => {
       const score = functionVector[fn];
-      const pct = ((score + 1) / 2) * 100;
+      // Bar grows outward from the 50% (score = 0) center rather than
+      // filling left-to-right, so a negative score visibly fills toward
+      // the left and a positive score toward the right.
+      const halfWidthPct = (Math.abs(score) / 2) * 100;
 
       const label = document.createElement("span");
       label.className = "function-label";
@@ -154,7 +157,8 @@
 
       const fill = document.createElement("div");
       fill.className = "function-fill";
-      fill.style.width = pct + "%";
+      fill.style.width = halfWidthPct + "%";
+      fill.style.left = (score >= 0 ? 50 : 50 - halfWidthPct) + "%";
       fill.style.background = typeColor;
 
       const track = document.createElement("div");
@@ -163,7 +167,8 @@
 
       const scoreEl = document.createElement("span");
       scoreEl.className = "function-score";
-      scoreEl.textContent = score.toFixed(2);
+      const formattedScore = score.toFixed(2);
+      scoreEl.textContent = formattedScore === "-0.00" ? "0.00" : formattedScore;
 
       const descId = "function-desc-" + fn;
       const description = document.createElement("p");

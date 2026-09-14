@@ -487,6 +487,110 @@ const ITEMS = [
     spread: 0.5,
   },
 
+  // ---- Cross-axis: Ni + Se (dominant/inferior pairing, e.g. INTJ / ESFP) ----
+  {
+    id: "ni_se_01",
+    kind: "cross",
+    stem: "When facing an important choice, you rely most on...",
+    poles: ["a strong internal sense of where this is headed", "what's directly observable and happening right now"],
+    loading: { Ni: -0.6, Se: 0.6 },
+    spread: 0.45,
+  },
+  {
+    id: "ni_se_02",
+    kind: "cross",
+    stem: "You feel most confident acting when...",
+    poles: ["you've reached a clear inner conviction about what's true", "you can see and react to what's right in front of you"],
+    loading: { Ni: -0.55, Se: 0.6 },
+    spread: 0.5,
+  },
+  {
+    id: "ni_se_03",
+    kind: "cross",
+    stem: "Your best insights come from...",
+    poles: ["patterns clicking together internally over time", "diving straight into hands-on experience"],
+    loading: { Ni: -0.6, Se: 0.55 },
+    spread: 0.45,
+  },
+
+  // ---- Cross-axis: Te + Fi (dominant/inferior pairing, e.g. ESTJ / INFP) ----
+  {
+    id: "te_fi_01",
+    kind: "cross",
+    stem: "You judge whether a decision was right based on...",
+    poles: ["whether it stayed true to what you believe", "whether it actually worked in practice"],
+    loading: { Fi: -0.6, Te: 0.6 },
+    spread: 0.45,
+  },
+  {
+    id: "te_fi_02",
+    kind: "cross",
+    stem: "When advice conflicts with your gut, you go with...",
+    poles: ["what feels authentically right to you", "whatever gets the best measurable outcome"],
+    loading: { Fi: -0.55, Te: 0.6 },
+    spread: 0.5,
+  },
+  {
+    id: "te_fi_03",
+    kind: "cross",
+    stem: "You'd rather a project be judged by...",
+    poles: ["whether it reflects your personal values", "whether it hits its target numbers"],
+    loading: { Fi: -0.6, Te: 0.55 },
+    spread: 0.45,
+  },
+
+  // ---- Cross-axis: Ne + Si (dominant/inferior pairing, e.g. ENTP / ISFJ) ----
+  {
+    id: "ne_si_01",
+    kind: "cross",
+    stem: "You approach a familiar task by...",
+    poles: ["looking for a new angle you haven't tried before", "sticking with the method that's worked in the past"],
+    loading: { Ne: -0.6, Si: 0.6 },
+    spread: 0.45,
+  },
+  {
+    id: "ne_si_02",
+    kind: "cross",
+    stem: "When plans change suddenly, you...",
+    poles: ["get excited about the new possibilities that opens up", "look for the closest thing to your original plan"],
+    loading: { Ne: -0.55, Si: 0.6 },
+    spread: 0.5,
+  },
+  {
+    id: "ne_si_03",
+    kind: "cross",
+    stem: "You trust information more when it...",
+    poles: ["connects to a bunch of interesting new ideas", "matches what you've reliably experienced before"],
+    loading: { Ne: -0.6, Si: 0.55 },
+    spread: 0.45,
+  },
+
+  // ---- Cross-axis: Ti + Fe (dominant/inferior pairing, e.g. ISTP / ENFJ) ----
+  {
+    id: "ti_fe_01",
+    kind: "cross",
+    stem: "You'd rather a conversation stay...",
+    poles: ["logically consistent, even if it's blunt", "warm and considerate of everyone's feelings"],
+    loading: { Ti: -0.6, Fe: 0.6 },
+    spread: 0.45,
+  },
+  {
+    id: "ti_fe_02",
+    kind: "cross",
+    stem: "You trust a conclusion more when it's...",
+    poles: ["internally coherent and makes sense to you", "well-received and helps the group get along"],
+    loading: { Ti: -0.55, Fe: 0.6 },
+    spread: 0.5,
+  },
+  {
+    id: "ti_fe_03",
+    kind: "cross",
+    stem: "In a tense meeting, you're more focused on...",
+    poles: ["getting the logic of the situation right", "keeping the mood okay for everyone"],
+    loading: { Ti: -0.6, Fe: 0.55 },
+    spread: 0.45,
+  },
+
   // ---- Decoys (zero-loaded; logged only, never scored) ----
   {
     id: "decoy_01",

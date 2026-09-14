@@ -200,13 +200,36 @@ button:disabled {
   overflow: hidden;
 }
 
+.function-track {
+  position: relative;
+  overflow: visible;
+}
+
+/* Center tick marks the neutral (score = 0) point, since fill now grows
+   outward from center rather than from the left edge — a bar's direction,
+   not just its length, is what shows whether a function scored above or
+   below the type's baseline. */
+.function-track::after {
+  content: "";
+  position: absolute;
+  top: -2px;
+  bottom: -2px;
+  left: 50%;
+  width: 1px;
+  background: var(--muted);
+  opacity: 0.5;
+}
+
 .confidence-fill {
   height: 100%;
 }
 
 .function-fill {
+  position: absolute;
+  top: 0;
   height: 100%;
   background: var(--accent);
+  border-radius: 4px;
 }
 
 .function-score {
