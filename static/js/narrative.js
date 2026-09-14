@@ -13,6 +13,19 @@ const FUNCTION_NAMES = {
   Fe: "Extraverted Feeling",
 };
 
+// Short, plain-language descriptions shown on the results function chart
+// (hover title + click-to-expand — see app.js renderResults).
+const FUNCTION_DESCRIPTIONS = {
+  Ni: "Synthesizes patterns over time into a single, focused sense of where things are headed.",
+  Ne: "Generates possibilities and connections, exploring multiple ways a situation could unfold.",
+  Si: "Draws on remembered detail and past experience to judge what's reliable now.",
+  Se: "Stays tuned to the immediate physical moment, reading and reacting to what's happening right now.",
+  Ti: "Builds and tests an internal framework of logic, checking whether things hold together on their own terms.",
+  Te: "Organizes people, resources, and steps toward a measurable, external result.",
+  Fi: "Weighs decisions against a personal, internal sense of what matters and feels right.",
+  Fe: "Reads the emotional tone of a room and works to keep things harmonious for the people in it.",
+};
+
 function isYoung(intake) {
   const age = intake && intake.age;
   return typeof age === "number" && age > 0 && age < 25;
@@ -70,5 +83,12 @@ function buildResultsNarrative(bestFitType, functionVector, flags, intake) {
 }
 
 if (typeof module !== "undefined" && module.exports) {
-  module.exports = { FUNCTION_NAMES, buildResultsNarrative, describeFlag, isYoung, isStressed };
+  module.exports = {
+    FUNCTION_NAMES,
+    FUNCTION_DESCRIPTIONS,
+    buildResultsNarrative,
+    describeFlag,
+    isYoung,
+    isStressed,
+  };
 }

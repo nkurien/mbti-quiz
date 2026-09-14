@@ -153,6 +153,32 @@ button:disabled {
   font-size: 0.9rem;
 }
 
+.function-item {
+  margin-bottom: 0.5rem;
+}
+
+.function-item .function-row {
+  margin-bottom: 0;
+  cursor: pointer;
+  border-radius: 6px;
+}
+
+.function-item .function-row:hover {
+  background: var(--track);
+}
+
+.function-item .function-row:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.function-description {
+  margin: 0.35rem 0 0 calc(2.5rem + 0.75rem);
+  color: var(--muted);
+  font-size: 0.85rem;
+  line-height: 1.4;
+}
+
 .function-label {
   width: 2.5rem;
   font-weight: 600;

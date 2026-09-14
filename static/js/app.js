@@ -3,7 +3,7 @@
   const { ITEMS } = window.ItemBank;
   const { deriveFunctionVector, bestFitType } = window.Scoring;
   const { computeFlags } = window.Discrepancy;
-  const { buildResultsNarrative, FUNCTION_NAMES } = window.Narrative;
+  const { buildResultsNarrative, FUNCTION_NAMES, FUNCTION_DESCRIPTIONS } = window.Narrative;
   const State = window.State;
 
   let session = State.createSession(ITEMS, TYPE_TEMPLATES);
@@ -165,13 +165,42 @@
       scoreEl.className = "function-score";
       scoreEl.textContent = score.toFixed(2);
 
+      const descId = "function-desc-" + fn;
+      const description = document.createElement("p");
+      description.className = "function-description";
+      description.id = descId;
+      description.textContent = FUNCTION_NAMES[fn] + " — " + FUNCTION_DESCRIPTIONS[fn];
+      description.hidden = true;
+
       const row = document.createElement("div");
       row.className = "function-row";
-      row.title = FUNCTION_NAMES[fn];
+      row.title = FUNCTION_NAMES[fn] + ": " + FUNCTION_DESCRIPTIONS[fn];
+      row.tabIndex = 0;
+      row.setAttribute("role", "button");
+      row.setAttribute("aria-expanded", "false");
+      row.setAttribute("aria-controls", descId);
       row.appendChild(label);
       row.appendChild(track);
       row.appendChild(scoreEl);
-      chart.appendChild(row);
+
+      const toggleDescription = () => {
+        const expanded = row.getAttribute("aria-expanded") === "true";
+        row.setAttribute("aria-expanded", String(!expanded));
+        description.hidden = expanded;
+      };
+      row.addEventListener("click", toggleDescription);
+      row.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          toggleDescription();
+        }
+      });
+
+      const item = document.createElement("div");
+      item.className = "function-item";
+      item.appendChild(row);
+      item.appendChild(description);
+      chart.appendChild(item);
     });
 
     showScreen("results");
