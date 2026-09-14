@@ -474,7 +474,7 @@ const ITEMS = [
     id: "ni_fe_02",
     kind: "cross",
     stem: "You trust your read on a group when...",
-    poles: ["it clicks into a single, clear insight", "it comes from picking up on everyone's mood"],
+    poles: ["it comes from one clear insight suddenly clicking into place", "it comes from picking up on everyone's mood"],
     loading: { Ni: -0.55, Fe: 0.55 },
     spread: 0.5,
   },

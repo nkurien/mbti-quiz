@@ -10,11 +10,28 @@ const TOTAL_QUESTIONS = 25;
 const COOLDOWN_LENGTH = 3;
 const DECOY_POSITIONS = [9, 19]; // 1-indexed question numbers reserved for decoys
 
+// The greedy top-K spread heuristic in selection.js has no built-in reason
+// to ever touch an axis that doesn't separate the current leaders, so a
+// session can spend most of its 25 questions on 1-2 axes and leave others
+// almost untested — weak evidence for exactly the axes the differentiation/
+// shadow flags depend on. To fix that without changing the heuristic
+// itself, the first few scored questions are restricted to whichever axis
+// hasn't been asked yet at all, guaranteeing baseline coverage before the
+// free-form greedy selection takes over.
+const AXES = ["ti_te", "fi_fe", "ni_ne", "si_se"];
+const COVERAGE_WINDOW = 8; // scored (non-decoy) questions reserved for guaranteeing axis coverage
+
+function axisOf(item) {
+  return item.kind === "axis" ? item.id.split("_").slice(0, 2).join("_") : null;
+}
+
 function createSession(items, templates) {
   const { createUniformWeights } = window.Scoring;
   return {
     weights: createUniformWeights(Object.keys(templates)),
     questionNumber: 0,
+    scoredCount: 0, // scored (non-decoy) questions answered so far
+    axisCounts: Object.fromEntries(AXES.map((a) => [a, 0])), // axis id -> items asked from it
     asked: new Set(), // item ids already asked (scored or decoy)
     cooldowns: new Map(), // item id -> question number it becomes eligible again
     skipLog: [], // { itemId, atQuestion }
@@ -50,6 +67,20 @@ function nextItem(session, templates) {
   const { selectNextItem } = window.Selection;
   const { dot, clip } = window.Scoring;
   const candidates = eligibleScoredItems(session);
+
+  if (session.scoredCount < COVERAGE_WINDOW) {
+    const uncovered = AXES.filter((a) => session.axisCounts[a] === 0);
+    const uncoveredAxis = uncovered.length
+      ? uncovered[Math.floor(Math.random() * uncovered.length)]
+      : null;
+    if (uncoveredAxis) {
+      const axisCandidates = candidates.filter((i) => axisOf(i) === uncoveredAxis);
+      if (axisCandidates.length) {
+        return selectNextItem(axisCandidates, session.weights, templates, dot, clip);
+      }
+    }
+  }
+
   return selectNextItem(candidates, session.weights, templates, dot, clip);
 }
 
@@ -66,6 +97,9 @@ function recordResponse(session, item, response, templates) {
   const { updateWeights } = window.Scoring;
   session.weights = updateWeights(session.weights, item, response, templates);
   session.responseLog.push({ itemId: item.id, response, atQuestion: session.questionNumber });
+  session.scoredCount += 1;
+  const axis = axisOf(item);
+  if (axis) session.axisCounts[axis] += 1;
 }
 
 // Records a skip: no weight update, item goes on cooldown.
