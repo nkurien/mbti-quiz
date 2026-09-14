@@ -60,11 +60,10 @@ button {
   font: inherit;
   cursor: pointer;
   border-radius: 8px;
-  border: 1px solid var(--border);
+  border: none;
   padding: 0.7rem 1.5rem;
   background: var(--accent);
   color: white;
-  border: none;
 }
 
 button.secondary {
@@ -122,6 +121,15 @@ button.secondary {
 input[type="range"] {
   width: 100%;
   accent-color: var(--accent);
+}
+
+input[type="range"].untouched {
+  opacity: 0.4;
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .question-actions {

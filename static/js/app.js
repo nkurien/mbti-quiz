@@ -24,6 +24,7 @@
 
   function startQuiz() {
     session = State.createSession(ITEMS, TYPE_TEMPLATES);
+    intake = {};
     showScreen("quiz");
     renderQuestion();
   }
@@ -49,6 +50,15 @@
 
     const slider = document.getElementById("slider");
     slider.value = 0;
+    slider.classList.add("untouched");
+    slider.setAttribute(
+      "aria-label",
+      `Slide from "${currentItem.poles[0]}" to "${currentItem.poles[1]}"`
+    );
+    slider.setAttribute("aria-valuetext", "not yet answered");
+
+    const submitButton = document.getElementById("submit-button");
+    submitButton.disabled = true;
 
     renderConfidence();
     updateProgressBar();
@@ -71,16 +81,24 @@
     top.forEach((type) => {
       const pct = Math.round(session.weights[type] * 100);
       const color = TYPE_COLORS[type];
+
+      const dot = document.createElement("span");
+      dot.className = "confidence-dot";
+      dot.style.background = color;
+
+      const fill = document.createElement("div");
+      fill.className = "confidence-fill";
+      fill.style.width = pct + "%";
+      fill.style.background = color;
+
+      const track = document.createElement("div");
+      track.className = "confidence-track";
+      track.appendChild(fill);
+
       const row = document.createElement("div");
       row.className = "confidence-row";
-      row.innerHTML =
-        '<span class="confidence-dot" style="background:' +
-        color +
-        '"></span><div class="confidence-track"><div class="confidence-fill" style="width:' +
-        pct +
-        "%;background:" +
-        color +
-        '"></div></div>';
+      row.appendChild(dot);
+      row.appendChild(track);
       container.appendChild(row);
     });
   }
@@ -129,24 +147,41 @@
     ranked.forEach((fn) => {
       const score = functionVector[fn];
       const pct = ((score + 1) / 2) * 100;
+
+      const label = document.createElement("span");
+      label.className = "function-label";
+      label.textContent = fn;
+
+      const fill = document.createElement("div");
+      fill.className = "function-fill";
+      fill.style.width = pct + "%";
+      fill.style.background = typeColor;
+
+      const track = document.createElement("div");
+      track.className = "function-track";
+      track.appendChild(fill);
+
+      const scoreEl = document.createElement("span");
+      scoreEl.className = "function-score";
+      scoreEl.textContent = score.toFixed(2);
+
       const row = document.createElement("div");
       row.className = "function-row";
-      row.innerHTML =
-        '<span class="function-label">' +
-        fn +
-        '</span><div class="function-track"><div class="function-fill" style="width:' +
-        pct +
-        "%;background:" +
-        typeColor +
-        '"></div></div><span class="function-score">' +
-        score.toFixed(2) +
-        "</span>";
       row.title = FUNCTION_NAMES[fn];
+      row.appendChild(label);
+      row.appendChild(track);
+      row.appendChild(scoreEl);
       chart.appendChild(row);
     });
 
     showScreen("results");
   }
+
+  document.getElementById("slider").addEventListener("input", (e) => {
+    e.target.classList.remove("untouched");
+    e.target.setAttribute("aria-valuetext", e.target.value);
+    document.getElementById("submit-button").disabled = false;
+  });
 
   document.getElementById("start-button").addEventListener("click", startQuiz);
   document.getElementById("submit-button").addEventListener("click", submitAnswer);

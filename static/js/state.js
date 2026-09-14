@@ -21,8 +21,26 @@ const DECOY_POSITIONS = [9, 19]; // 1-indexed question numbers reserved for deco
 const AXES = ["ti_te", "fi_fe", "ni_ne", "si_se"];
 const COVERAGE_WINDOW = 8; // scored (non-decoy) questions reserved for guaranteeing axis coverage
 
-function axisOf(item) {
-  return item.kind === "axis" ? item.id.split("_").slice(0, 2).join("_") : null;
+function functionAxis(fn) {
+  const letter = fn[0].toLowerCase();
+  return AXES.find((axis) => axis.startsWith(letter));
+}
+
+// Which axes an item provides evidence on. "axis" items are tagged by id
+// (a single axis); "cross" items load two different-letter functions, each
+// of which belongs to its own axis, so they can cover more than one — and
+// should still count toward coverage for each (see AXES/COVERAGE_WINDOW
+// above).
+function axesOf(item) {
+  if (item.kind === "axis") {
+    return [item.id.split("_").slice(0, 2).join("_")];
+  }
+  if (item.kind === "cross") {
+    return Object.keys(item.loading)
+      .map(functionAxis)
+      .filter((axis, i, arr) => axis && arr.indexOf(axis) === i);
+  }
+  return [];
 }
 
 function createSession(items, templates) {
@@ -32,8 +50,9 @@ function createSession(items, templates) {
     questionNumber: 0,
     scoredCount: 0, // scored (non-decoy) questions answered so far
     axisCounts: Object.fromEntries(AXES.map((a) => [a, 0])), // axis id -> items asked from it
-    asked: new Set(), // item ids already asked (scored or decoy)
+    asked: new Set(), // item ids already asked (scored or decoy) or retired after 2 skips
     cooldowns: new Map(), // item id -> question number it becomes eligible again
+    skipCounts: new Map(), // item id -> number of times skipped
     skipLog: [], // { itemId, atQuestion }
     decoyLog: [], // { itemId, response, atQuestion }
     responseLog: [], // { itemId, response, atQuestion } for scored items
@@ -74,7 +93,7 @@ function nextItem(session, templates) {
       ? uncovered[Math.floor(Math.random() * uncovered.length)]
       : null;
     if (uncoveredAxis) {
-      const axisCandidates = candidates.filter((i) => axisOf(i) === uncoveredAxis);
+      const axisCandidates = candidates.filter((i) => axesOf(i).includes(uncoveredAxis));
       if (axisCandidates.length) {
         return selectNextItem(axisCandidates, session.weights, templates, dot, clip);
       }
@@ -98,15 +117,24 @@ function recordResponse(session, item, response, templates) {
   session.weights = updateWeights(session.weights, item, response, templates);
   session.responseLog.push({ itemId: item.id, response, atQuestion: session.questionNumber });
   session.scoredCount += 1;
-  const axis = axisOf(item);
-  if (axis) session.axisCounts[axis] += 1;
+  axesOf(item).forEach((axis) => {
+    session.axisCounts[axis] += 1;
+  });
 }
 
-// Records a skip: no weight update, item goes on cooldown.
+// Records a skip: no weight update, item goes on cooldown. A second skip
+// of the same item retires it for the rest of the session instead of
+// cycling it back after another cooldown — one re-presentation is enough
+// budget to spend on an item the respondent has already passed on twice.
 function recordSkip(session, item) {
   session.questionNumber += 1;
   session.skipLog.push({ itemId: item.id, atQuestion: session.questionNumber });
-  session.cooldowns.set(item.id, session.questionNumber + COOLDOWN_LENGTH);
+  session.skipCounts.set(item.id, (session.skipCounts.get(item.id) || 0) + 1);
+  if (session.skipCounts.get(item.id) >= 2) {
+    session.asked.add(item.id);
+  } else {
+    session.cooldowns.set(item.id, session.questionNumber + COOLDOWN_LENGTH);
+  }
 }
 
 if (typeof module !== "undefined" && module.exports) {

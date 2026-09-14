@@ -17,8 +17,8 @@ inversion, shadow intrusion, poor differentiation).
 
 Plain HTML/CSS/JS, no build step, no framework — matches the rest of
 Nathan's personal-site work. Deploys to Cloudflare Pages on its own
-subdomain (pattern: `tuner.`, `fragrance.` → this one TBD, e.g.
-`type.nathankurien.com`).
+subdomain (pattern: `tuner.`, `fragrance.` → this one settled on
+`mbti.nathankurien.com`, see `config.toml`).
 
 **Assumption to confirm**: since this is one interactive single-page app
 rather than a content site, it probably doesn't need Hugo the way
@@ -127,7 +127,9 @@ in v1 — see `project-brief.md` Appendix B for the documented upgrade path
 - Fixed at exactly 25 questions. No early stopping, no dynamic
   continuation (that's a deferred future extension — do not build it now).
 - Skips: no weight update, item returns to pool with a 3-question cooldown
-  before it's eligible again.
+  before it's eligible again. A second skip of the same item retires it for
+  the rest of the session rather than cycling it back a second time — caps
+  how much of the 25-question budget one reluctant item can cost.
 - Decoy items (zero-loaded): logged only (skip/decoy logs can share a
   simple structure), never affect scoring or the results screen.
 - After 25 questions: 2–3 short intake items (recent stress level, a

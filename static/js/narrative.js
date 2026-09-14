@@ -13,7 +13,8 @@ const FUNCTION_NAMES = {
   Fe: "Extraverted Feeling",
 };
 
-function isYoung(age) {
+function isYoung(intake) {
+  const age = intake && intake.age;
   return typeof age === "number" && age > 0 && age < 25;
 }
 
@@ -25,7 +26,7 @@ function describeFlag(flag, intake) {
   switch (flag.type) {
     case "dominant_auxiliary_inversion": {
       const base = `Your ${FUNCTION_NAMES[flag.auxiliary]} score came out ahead of your ${FUNCTION_NAMES[flag.dominant]} score, even though ${flag.dominant} is meant to lead for this type.`;
-      if (isYoung(intake && intake.age)) {
+      if (isYoung(intake)) {
         return (
           base +
           " That's fairly common earlier in life, before a dominant function has fully settled in — this may sort itself out with time rather than pointing to a different type."
