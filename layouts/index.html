@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en-gb">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{ .Site.Title }}</title>
+  <meta name="description" content="{{ .Site.Params.description }}">
+  <link rel="stylesheet" href="{{ "css/style.css" | relURL }}">
+</head>
+<body>
+  <div class="app">
+
+    <section id="screen-intro" class="screen active">
+      <h1>Cognitive Function Stack Test</h1>
+      <p class="subtitle">25 short questions. No jargon on your end — just pick the side that feels more like you.</p>
+      <button id="start-button">Start</button>
+    </section>
+
+    <section id="screen-quiz" class="screen">
+      <div class="progress-track"><div id="progress-fill" class="progress-fill"></div></div>
+      <div class="question-meta">Question <span id="question-number"></span> of <span id="question-total"></span></div>
+      <div class="stem" id="stem"></div>
+      <div class="slider-row">
+        <div class="pole-labels">
+          <span id="pole-left"></span>
+          <span id="pole-right"></span>
+        </div>
+        <input type="range" id="slider" min="-1" max="1" step="0.01" value="0">
+      </div>
+      <div class="question-actions">
+        <button class="secondary" id="skip-button">Skip</button>
+        <button id="submit-button">Next</button>
+      </div>
+      <div class="confidence-panel">
+        <h2>Current leaning</h2>
+        <div id="confidence-bars"></div>
+      </div>
+    </section>
+
+    <section id="screen-intake" class="screen">
+      <h1>Almost done</h1>
+      <p class="subtitle">A few quick questions before your results — these only affect how the write-up is worded, not your scores.</p>
+      <div class="intake-field">
+        <label for="intake-age">Age</label>
+        <input type="number" id="intake-age" min="10" max="110">
+      </div>
+      <div class="intake-field">
+        <label for="intake-stress">Recent stress level</label>
+        <select id="intake-stress">
+          <option value="low">Low</option>
+          <option value="moderate" selected>Moderate</option>
+          <option value="high">High</option>
+        </select>
+      </div>
+      <div class="intake-field">
+        <label for="intake-sleep">Recent sleep</label>
+        <select id="intake-sleep">
+          <option value="good" selected>Good</option>
+          <option value="okay">Okay</option>
+          <option value="poor">Poor</option>
+        </select>
+      </div>
+      <button id="intake-submit">See results</button>
+    </section>
+
+    <section id="screen-results" class="screen">
+      <div class="question-meta">Your result</div>
+      <div class="result-type" id="result-type"></div>
+      <div id="result-narrative"></div>
+      <h2>Function breakdown</h2>
+      <div class="function-chart" id="function-chart"></div>
+      <button class="secondary" id="restart-button">Start over</button>
+    </section>
+
+  </div>
+
+  <script src="{{ "js/templates.js" | relURL }}"></script>
+  <script src="{{ "js/items.js" | relURL }}"></script>
+  <script src="{{ "js/scoring.js" | relURL }}"></script>
+  <script src="{{ "js/selection.js" | relURL }}"></script>
+  <script src="{{ "js/state.js" | relURL }}"></script>
+  <script src="{{ "js/discrepancy.js" | relURL }}"></script>
+  <script src="{{ "js/narrative.js" | relURL }}"></script>
+  <script>
+    window.Templates = { TYPE_TEMPLATES, TYPE_RANKS, ALL_FUNCTIONS };
+    window.ItemBank = { ITEMS };
+    window.Scoring = { clip, dot, gaussianPdf, createUniformWeights, updateWeights, deriveFunctionVector, bestFitType };
+    window.Selection = { topKTypes, selectNextItem };
+    window.State = { TOTAL_QUESTIONS, COOLDOWN_LENGTH, DECOY_POSITIONS, createSession, eligibleScoredItems, isDone, nextItem, recordResponse, recordSkip };
+    window.Discrepancy = { OPPOSITE_PAIRS, DIFFERENTIATION_THRESHOLD, computeFlags };
+    window.Narrative = { FUNCTION_NAMES, buildResultsNarrative, describeFlag, isYoung, isStressed };
+  </script>
+  <script src="{{ "js/app.js" | relURL }}"></script>
+</body>
+</html>

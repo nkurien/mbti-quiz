@@ -1,0 +1,15 @@
+baseURL = "https://mbti.nathankurien.com/"
+languageCode = "en-gb"
+title = "Cognitive Function Stack Test"
+
+enableRobotsTXT = true
+buildDrafts = false
+buildFuture = false
+buildExpired = false
+
+# No theme — this is a single interactive page, not a content site.
+# Hugo is used purely for consistency with the rest of the site family
+# (build pipeline, static asset fingerprinting) via layouts/index.html.
+
+[params]
+  description = "A short adaptive quiz that figures out your Jungian cognitive function stack."
