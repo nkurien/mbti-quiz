@@ -17,7 +17,18 @@ function functionAtRank(ranks, rank) {
   return Object.keys(ranks).find((fn) => ranks[fn] === rank);
 }
 
-function computeFlags(bestFitType, functionVector, typeRanks) {
+// `rawFunctionVector` (see Scoring.deriveRawFunctionVector) is optional and
+// defaults to `functionVector` — callers that don't have raw axis evidence
+// handy (e.g. existing tests passing a synthetic vector) get the old
+// behavior unchanged. Only the shadow_intrusion check uses it: the
+// template-derived `functionVector` is a weighted average of canonical
+// type templates, so it structurally cannot show a shadow function
+// outscoring a tertiary/inferior function unless the type posterior
+// itself is genuinely split — it stays pinned near the winning type's own
+// template even when a respondent's raw answers lean toward a shadow
+// function. `rawFunctionVector`, built directly from axis-item responses,
+// isn't confined that way.
+function computeFlags(bestFitType, functionVector, typeRanks, rawFunctionVector = functionVector) {
   const ranks = typeRanks[bestFitType];
   const flags = [];
 
@@ -38,17 +49,17 @@ function computeFlags(bestFitType, functionVector, typeRanks) {
   const shadowFunctions = [4, 5, 6, 7].map((rank) => functionAtRank(ranks, rank));
   for (const shadowFn of shadowFunctions) {
     if (
-      functionVector[shadowFn] > functionVector[tertiary] ||
-      functionVector[shadowFn] > functionVector[inferior]
+      rawFunctionVector[shadowFn] > rawFunctionVector[tertiary] ||
+      rawFunctionVector[shadowFn] > rawFunctionVector[inferior]
     ) {
       flags.push({
         type: "shadow_intrusion",
         shadowFunction: shadowFn,
-        shadowScore: functionVector[shadowFn],
+        shadowScore: rawFunctionVector[shadowFn],
         tertiary,
-        tertiaryScore: functionVector[tertiary],
+        tertiaryScore: rawFunctionVector[tertiary],
         inferior,
-        inferiorScore: functionVector[inferior],
+        inferiorScore: rawFunctionVector[inferior],
       });
     }
   }

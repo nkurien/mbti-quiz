@@ -54,7 +54,13 @@ function updateWeights(weights, item, response, templates) {
   return newWeights;
 }
 
-// Derived function vector: weighted average of the 16 templates.
+// Derived function vector: weighted average of the 16 templates. Because
+// every template is built by the same linear-rank formula (see
+// templates.js), this vector can only ever land inside the convex hull of
+// the 16 templates — it structurally cannot represent an "off-template"
+// combination (e.g. a genuinely strong shadow function alongside a
+// dominant function no canonical type pairs it with). See
+// deriveRawFunctionVector below for the un-model-confined counterpart.
 function deriveFunctionVector(weights, templates, allFunctions) {
   const vector = {};
   allFunctions.forEach((fn) => (vector[fn] = 0));
@@ -64,6 +70,38 @@ function deriveFunctionVector(weights, templates, allFunctions) {
     allFunctions.forEach((fn) => {
       vector[fn] += w * template[fn];
     });
+  }
+  return vector;
+}
+
+// Axis id -> [negative-pole function, positive-pole function], matching
+// the sign convention in items.js (left/negative, right/positive).
+const AXIS_FUNCTIONS = {
+  ti_te: ["Ti", "Te"],
+  fi_fe: ["Fi", "Fe"],
+  ni_ne: ["Ni", "Ne"],
+  si_se: ["Si", "Se"],
+};
+
+// Raw function vector: the plain average of the person's own axis-item
+// responses, per axis — never touches the type templates or mixture
+// weights, so it isn't confined to the space of canonical type profiles.
+// Only "axis" items (clean same-letter contrasts) feed this; "cross"
+// items conflate two functions in one response and can't be cleanly
+// attributed to either. `axisEvidence` is `{ axisId: [responses] }` from
+// session state.
+function deriveRawFunctionVector(axisEvidence, allFunctions) {
+  const vector = {};
+  allFunctions.forEach((fn) => (vector[fn] = 0));
+  for (const axis in AXIS_FUNCTIONS) {
+    const responses = axisEvidence[axis] || [];
+    const avg = responses.length ? responses.reduce((a, b) => a + b, 0) / responses.length : 0;
+    const [negFn, posFn] = AXIS_FUNCTIONS[axis];
+    // `avg === 0 ? 0 : -avg` avoids a stray -0 (from `-0` on empty/balanced
+    // evidence), which is a real distinct value in JS and trips strict
+    // equality checks despite meaning the same thing here.
+    vector[negFn] = avg === 0 ? 0 : -avg;
+    vector[posFn] = avg;
   }
   return vector;
 }
@@ -88,6 +126,7 @@ if (typeof module !== "undefined" && module.exports) {
     createUniformWeights,
     updateWeights,
     deriveFunctionVector,
+    deriveRawFunctionVector,
     bestFitType,
   };
 }

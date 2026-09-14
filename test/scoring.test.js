@@ -59,3 +59,30 @@ test("deriveFunctionVector is the weighted average of the templates", () => {
 test("bestFitType returns the argmax type", () => {
   assert.equal(Scoring.bestFitType({ INTJ: 0.2, ENTJ: 0.7, ISFP: 0.1 }), "ENTJ");
 });
+
+test("deriveRawFunctionVector averages responses per axis with the sign convention applied", () => {
+  // ti_te: left/negative pole is Ti, right/positive pole is Te — a -0.8
+  // response (leaning Ti) should read as high Ti, low Te.
+  const axisEvidence = { ti_te: [-0.8, -0.6], fi_fe: [], ni_ne: [0.4], si_se: [] };
+  const vector = Scoring.deriveRawFunctionVector(axisEvidence, Templates.ALL_FUNCTIONS);
+  assert.ok(Math.abs(vector.Ti - 0.7) < 1e-9, `expected Ti ~0.7, got ${vector.Ti}`);
+  assert.ok(Math.abs(vector.Te - -0.7) < 1e-9, `expected Te ~-0.7, got ${vector.Te}`);
+  assert.ok(Math.abs(vector.Ne - 0.4) < 1e-9, `expected Ne ~0.4, got ${vector.Ne}`);
+  assert.ok(Math.abs(vector.Ni - -0.4) < 1e-9, `expected Ni ~-0.4, got ${vector.Ni}`);
+});
+
+test("deriveRawFunctionVector defaults an axis with no evidence to 0, not undefined", () => {
+  const axisEvidence = { ti_te: [], fi_fe: [], ni_ne: [], si_se: [] };
+  const vector = Scoring.deriveRawFunctionVector(axisEvidence, Templates.ALL_FUNCTIONS);
+  Templates.ALL_FUNCTIONS.forEach((fn) => assert.equal(vector[fn], 0));
+});
+
+test("deriveRawFunctionVector is not confined to the space of canonical templates", () => {
+  // No canonical type template has both Ni and Ti scoring high at once —
+  // that's exactly the "off-template" shadow-intrusion case the mixture
+  // model's derived vector structurally can't represent. Raw axis
+  // evidence isn't built from templates at all, so it can.
+  const axisEvidence = { ti_te: [-0.9], fi_fe: [], ni_ne: [-0.9], si_se: [] };
+  const vector = Scoring.deriveRawFunctionVector(axisEvidence, Templates.ALL_FUNCTIONS);
+  assert.ok(vector.Ni > 0.8 && vector.Ti > 0.8, "expected both Ni and Ti to score high simultaneously");
+});

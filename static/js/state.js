@@ -20,6 +20,12 @@ const DECOY_POSITIONS = [9, 19]; // 1-indexed question numbers reserved for deco
 // free-form greedy selection takes over.
 const AXES = ["ti_te", "fi_fe", "ni_ne", "si_se"];
 const COVERAGE_WINDOW = 8; // scored (non-decoy) questions reserved for guaranteeing axis coverage
+// A single axis-item response is too noisy on its own to trust as the raw
+// evidence for that axis (item loadings vary in magnitude item-to-item,
+// e.g. 0.6 vs 0.8, which shows up as swing in the raw response even for a
+// perfectly consistent respondent) — averaging 2 evens that out. 4 axes x
+// 2 fits exactly inside COVERAGE_WINDOW.
+const MIN_AXIS_EVIDENCE = 2;
 
 function functionAxis(fn) {
   const letter = fn[0].toLowerCase();
@@ -56,6 +62,12 @@ function createSession(items, templates) {
     skipLog: [], // { itemId, atQuestion }
     decoyLog: [], // { itemId, response, atQuestion }
     responseLog: [], // { itemId, response, atQuestion } for scored items
+    // Raw axis-item responses, kept separately from the mixture weights —
+    // feeds Scoring.deriveRawFunctionVector for discrepancy flags that the
+    // template-confined derived vector can't detect (see discrepancy.js).
+    // Only "axis" items are attributed here; "cross" items load two
+    // functions in one response and can't be cleanly split between them.
+    axisEvidence: Object.fromEntries(AXES.map((a) => [a, []])),
     decoyPool: items.filter((i) => i.kind === "decoy"),
     scoredPool: items.filter((i) => i.kind !== "decoy"),
   };
@@ -88,14 +100,24 @@ function nextItem(session, templates) {
   const candidates = eligibleScoredItems(session);
 
   if (session.scoredCount < COVERAGE_WINDOW) {
-    const uncovered = AXES.filter((a) => session.axisCounts[a] === 0);
+    const uncovered = AXES.filter((a) => session.axisEvidence[a].length < MIN_AXIS_EVIDENCE);
     const uncoveredAxis = uncovered.length
       ? uncovered[Math.floor(Math.random() * uncovered.length)]
       : null;
     if (uncoveredAxis) {
       const axisCandidates = candidates.filter((i) => axesOf(i).includes(uncoveredAxis));
-      if (axisCandidates.length) {
-        return selectNextItem(axisCandidates, session.weights, templates, dot, clip);
+      // Prefer a pure "axis" item over a "cross" item that merely touches
+      // this axis: cross items conflate two functions in one response and
+      // don't feed Scoring.deriveRawFunctionVector (see state.js's
+      // axisEvidence and scoring.js), so satisfying coverage with one
+      // would leave that axis's raw evidence empty even though the axis
+      // itself was "covered". Fall back to cross items only if no pure
+      // axis item is available (e.g. all retired after being skipped
+      // twice).
+      const pureAxisCandidates = axisCandidates.filter((i) => i.kind === "axis");
+      const pool = pureAxisCandidates.length ? pureAxisCandidates : axisCandidates;
+      if (pool.length) {
+        return selectNextItem(pool, session.weights, templates, dot, clip);
       }
     }
   }
@@ -120,6 +142,9 @@ function recordResponse(session, item, response, templates) {
   axesOf(item).forEach((axis) => {
     session.axisCounts[axis] += 1;
   });
+  if (item.kind === "axis") {
+    session.axisEvidence[axesOf(item)[0]].push(response);
+  }
 }
 
 // Records a skip: no weight update, item goes on cooldown. A second skip

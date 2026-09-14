@@ -123,3 +123,38 @@ test("session ends after exactly TOTAL_QUESTIONS answers", () => {
   const { kinds } = runSession(() => 0);
   assert.equal(kinds.length, State.TOTAL_QUESTIONS);
 });
+
+const MIN_AXIS_EVIDENCE = 2; // must match state.js
+
+test("every axis accumulates at least MIN_AXIS_EVIDENCE raw responses (many sessions)", () => {
+  // Regression test: the coverage-window guarantee used to accept ANY
+  // item touching an axis (including "cross" items, which don't feed
+  // axisEvidence), so an axis could end up "covered" while its raw
+  // evidence pool stayed empty. See scoring.js's deriveRawFunctionVector
+  // and discrepancy.js's shadow_intrusion check, which depend on this.
+  withSeededRandom(3, () => {
+    for (let trial = 0; trial < 30; trial++) {
+      const { session } = runSession(() => Math.random() * 2 - 1);
+      AXES.forEach((axis) => {
+        assert.ok(
+          session.axisEvidence[axis].length >= MIN_AXIS_EVIDENCE,
+          `trial ${trial}: axis "${axis}" only got ${session.axisEvidence[axis].length} raw responses`
+        );
+      });
+    }
+  });
+});
+
+test("axisEvidence only accumulates from 'axis' kind items, never 'cross' or 'decoy'", () => {
+  const session = State.createSession(ITEMS, Templates.TYPE_TEMPLATES);
+  while (!State.isDone(session)) {
+    const item = State.nextItem(session, Templates.TYPE_TEMPLATES);
+    State.recordResponse(session, item, Math.random() * 2 - 1, Templates.TYPE_TEMPLATES);
+  }
+  const axisItemIds = new Set(ITEMS.filter((i) => i.kind === "axis").map((i) => i.id));
+  const askedAxisItemIds = new Set(
+    session.responseLog.filter((r) => axisItemIds.has(r.itemId)).map((r) => r.itemId)
+  );
+  const totalRawEvidence = AXES.reduce((sum, axis) => sum + session.axisEvidence[axis].length, 0);
+  assert.equal(totalRawEvidence, askedAxisItemIds.size);
+});

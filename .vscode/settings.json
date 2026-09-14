@@ -2,6 +2,7 @@
     "conventionalCommits.scopes": [
         "ui",
         "quiz",
-        "results"
+        "results",
+        "scoring"
     ]
 }

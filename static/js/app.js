@@ -1,7 +1,7 @@
 (function () {
   const { TYPE_TEMPLATES, TYPE_RANKS, ALL_FUNCTIONS, TYPE_COLORS } = window.Templates;
   const { ITEMS } = window.ItemBank;
-  const { deriveFunctionVector, bestFitType } = window.Scoring;
+  const { deriveFunctionVector, deriveRawFunctionVector, bestFitType } = window.Scoring;
   const { computeFlags } = window.Discrepancy;
   const { buildResultsNarrative, FUNCTION_NAMES, FUNCTION_DESCRIPTIONS } = window.Narrative;
   const State = window.State;
@@ -125,8 +125,9 @@
 
   function renderResults() {
     const functionVector = deriveFunctionVector(session.weights, TYPE_TEMPLATES, ALL_FUNCTIONS);
+    const rawFunctionVector = deriveRawFunctionVector(session.axisEvidence, ALL_FUNCTIONS);
     const bestType = bestFitType(session.weights);
-    const flags = computeFlags(bestType, functionVector, TYPE_RANKS);
+    const flags = computeFlags(bestType, functionVector, TYPE_RANKS, rawFunctionVector);
     const narrative = buildResultsNarrative(bestType, functionVector, flags, intake);
 
     const typeColor = TYPE_COLORS[bestType];
