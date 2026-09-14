@@ -136,14 +136,6 @@ input[type="range"] {
   padding-top: 1rem;
 }
 
-.confidence-panel h2 {
-  font-size: 0.85rem;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  color: var(--muted);
-  margin-bottom: 0.75rem;
-}
-
 .confidence-row,
 .function-row {
   display: flex;
@@ -153,10 +145,16 @@ input[type="range"] {
   font-size: 0.9rem;
 }
 
-.confidence-label,
 .function-label {
   width: 2.5rem;
   font-weight: 600;
+}
+
+.confidence-dot {
+  width: 0.7rem;
+  height: 0.7rem;
+  border-radius: 50%;
+  flex-shrink: 0;
 }
 
 .confidence-track,
@@ -168,13 +166,15 @@ input[type="range"] {
   overflow: hidden;
 }
 
-.confidence-fill,
+.confidence-fill {
+  height: 100%;
+}
+
 .function-fill {
   height: 100%;
   background: var(--accent);
 }
 
-.confidence-pct,
 .function-score {
   width: 3rem;
   text-align: right;

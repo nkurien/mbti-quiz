@@ -1,5 +1,5 @@
 (function () {
-  const { TYPE_TEMPLATES, TYPE_RANKS, ALL_FUNCTIONS } = window.Templates;
+  const { TYPE_TEMPLATES, TYPE_RANKS, ALL_FUNCTIONS, TYPE_COLORS } = window.Templates;
   const { ITEMS } = window.ItemBank;
   const { deriveFunctionVector, bestFitType } = window.Scoring;
   const { computeFlags } = window.Discrepancy;
@@ -59,6 +59,9 @@
     document.getElementById("progress-fill").style.width = pct + "%";
   }
 
+  // Deliberately anonymised: no type letters or percentage numbers, just
+  // a colour-coded dot + bar per leading type, so the respondent can't
+  // read an explicit "leaning" during the quiz (that would bias answers).
   function renderConfidence() {
     const top = Object.keys(session.weights)
       .sort((a, b) => session.weights[b] - session.weights[a])
@@ -67,16 +70,17 @@
     container.innerHTML = "";
     top.forEach((type) => {
       const pct = Math.round(session.weights[type] * 100);
+      const color = TYPE_COLORS[type];
       const row = document.createElement("div");
       row.className = "confidence-row";
       row.innerHTML =
-        '<span class="confidence-label">' +
-        type +
-        '</span><div class="confidence-track"><div class="confidence-fill" style="width:' +
+        '<span class="confidence-dot" style="background:' +
+        color +
+        '"></span><div class="confidence-track"><div class="confidence-fill" style="width:' +
         pct +
-        '%"></div></div><span class="confidence-pct">' +
-        pct +
-        "%</span>";
+        "%;background:" +
+        color +
+        '"></div></div>';
       container.appendChild(row);
     });
   }
@@ -107,7 +111,10 @@
     const flags = computeFlags(bestType, functionVector, TYPE_RANKS);
     const narrative = buildResultsNarrative(bestType, functionVector, flags, intake);
 
-    document.getElementById("result-type").textContent = bestType;
+    const typeColor = TYPE_COLORS[bestType];
+    const resultTypeEl = document.getElementById("result-type");
+    resultTypeEl.textContent = bestType;
+    resultTypeEl.style.color = typeColor;
     const narrativeEl = document.getElementById("result-narrative");
     narrativeEl.innerHTML = "";
     narrative.forEach((p) => {
@@ -129,7 +136,9 @@
         fn +
         '</span><div class="function-track"><div class="function-fill" style="width:' +
         pct +
-        '%"></div></div><span class="function-score">' +
+        "%;background:" +
+        typeColor +
+        '"></div></div><span class="function-score">' +
         score.toFixed(2) +
         "</span>";
       row.title = FUNCTION_NAMES[fn];

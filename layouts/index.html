@@ -32,7 +32,9 @@
         <button id="submit-button">Next</button>
       </div>
       <div class="confidence-panel">
-        <h2>Current leaning</h2>
+        <!-- Heading intentionally omitted: showing an explicit "leaning"
+             label biases responses. Dots/bars below are anonymised
+             (see app.js renderConfidence + templates.js TYPE_COLORS). -->
         <div id="confidence-bars"></div>
       </div>
     </section>
@@ -82,7 +84,7 @@
   <script src="{{ "js/discrepancy.js" | relURL }}"></script>
   <script src="{{ "js/narrative.js" | relURL }}"></script>
   <script>
-    window.Templates = { TYPE_TEMPLATES, TYPE_RANKS, ALL_FUNCTIONS };
+    window.Templates = { TYPE_TEMPLATES, TYPE_RANKS, ALL_FUNCTIONS, TYPE_COLORS };
     window.ItemBank = { ITEMS };
     window.Scoring = { clip, dot, gaussianPdf, createUniformWeights, updateWeights, deriveFunctionVector, bestFitType };
     window.Selection = { topKTypes, selectNextItem };

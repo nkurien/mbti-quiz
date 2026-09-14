@@ -70,6 +70,29 @@ for (const [type, stack] of Object.entries(CONSCIOUS_STACKS)) {
   TYPE_RANKS[type] = ranks;
 }
 
+// Per-type colours, used only to anonymise the in-quiz leaning display
+// (a dot + bar in this colour stands in for the type name/letters so the
+// respondent isn't shown which type is currently leading). Picked for
+// mutual distinctness at a glance; INTJ is dark orange per project brief.
+const TYPE_COLORS = {
+  INTJ: "#b5541b", // dark orange
+  ISTJ: "#4a5a6b", // slate blue-grey
+  ISFJ: "#7a8c6e", // sage green
+  INFJ: "#5b4a8a", // deep violet
+  ISTP: "#3c7a7a", // teal
+  ISFP: "#c17a9e", // dusty pink
+  INFP: "#8a6bb0", // lavender purple
+  INTP: "#4d8fc4", // steel blue
+  ESTP: "#c4472a", // brick red
+  ESFP: "#e0a83c", // amber
+  ENFP: "#e0673c", // coral orange
+  ENTP: "#d4a017", // mustard gold
+  ESTJ: "#2f6b4f", // forest green
+  ESFJ: "#c45f8a", // rose pink
+  ENFJ: "#3ba36e", // emerald green
+  ENTJ: "#8a2f2f", // dark red
+};
+
 if (typeof module !== "undefined" && module.exports) {
-  module.exports = { TYPE_TEMPLATES, TYPE_RANKS, ALL_FUNCTIONS, CONSCIOUS_STACKS };
+  module.exports = { TYPE_TEMPLATES, TYPE_RANKS, ALL_FUNCTIONS, CONSCIOUS_STACKS, TYPE_COLORS };
 }
