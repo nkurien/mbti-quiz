@@ -59,6 +59,10 @@
 
     const submitButton = document.getElementById("submit-button");
     submitButton.disabled = true;
+    // Disabling the button the user just clicked (submit/skip) drops focus
+    // to <body> in most browsers — send it to the slider instead so
+    // keyboard/screen-reader users land on the next interactive control.
+    slider.focus({ preventScroll: true });
 
     renderConfidence();
     updateProgressBar();
@@ -132,8 +136,12 @@
 
     const typeColor = TYPE_COLORS[bestType];
     const resultTypeEl = document.getElementById("result-type");
-    resultTypeEl.textContent = bestType;
-    resultTypeEl.style.color = typeColor;
+    resultTypeEl.innerHTML = "";
+    const swatch = document.createElement("span");
+    swatch.className = "result-type-swatch";
+    swatch.style.background = typeColor;
+    resultTypeEl.appendChild(swatch);
+    resultTypeEl.appendChild(document.createTextNode(bestType));
     const narrativeEl = document.getElementById("result-narrative");
     narrativeEl.innerHTML = "";
     narrative.forEach((p) => {
@@ -141,6 +149,16 @@
       para.textContent = p;
       narrativeEl.appendChild(para);
     });
+
+    // The chart renders the mixture vector (functionVector), matching
+    // CLAUDE.md's spec for what it shows. shadow_intrusion is flagged from
+    // the raw axis-response vector instead (see discrepancy.js) because the
+    // mixture vector structurally can't show a shadow function outscoring
+    // tertiary/inferior — so a flagged function gets a badge here rather
+    // than the chart switching vectors, which would contradict itself
+    // (raw evidence only covers pure-axis items and mirrors each pair).
+    const shadowFlags = flags.filter((f) => f.type === "shadow_intrusion");
+    const shadowFunctions = new Set(shadowFlags.map((f) => f.shadowFunction));
 
     const chart = document.getElementById("function-chart");
     chart.innerHTML = "";
@@ -188,6 +206,14 @@
       row.appendChild(label);
       row.appendChild(track);
       row.appendChild(scoreEl);
+      if (shadowFunctions.has(fn)) {
+        const badge = document.createElement("span");
+        badge.className = "function-shadow-badge";
+        badge.textContent = "answered higher";
+        badge.title =
+          "Your direct answers on this leaned higher than this chart shows — see the note above.";
+        row.appendChild(badge);
+      }
 
       const toggleDescription = () => {
         const expanded = row.getAttribute("aria-expanded") === "true";
@@ -212,11 +238,19 @@
     showScreen("results");
   }
 
-  document.getElementById("slider").addEventListener("input", (e) => {
+  // "input" alone misses a click/tap on the thumb that leaves it at its
+  // starting value (0) — no value change means no input event, so the
+  // neutral response was unreachable without dragging away and back.
+  // "click" and "keyup" catch that: any deliberate interaction marks the
+  // slider touched even when the value didn't move.
+  function markSliderTouched(e) {
     e.target.classList.remove("untouched");
     e.target.setAttribute("aria-valuetext", e.target.value);
     document.getElementById("submit-button").disabled = false;
-  });
+  }
+  document.getElementById("slider").addEventListener("input", markSliderTouched);
+  document.getElementById("slider").addEventListener("click", markSliderTouched);
+  document.getElementById("slider").addEventListener("keyup", markSliderTouched);
 
   document.getElementById("start-button").addEventListener("click", startQuiz);
   document.getElementById("submit-button").addEventListener("click", submitAnswer);

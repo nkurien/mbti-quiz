@@ -73,13 +73,17 @@ function createSession(items, templates) {
   };
 }
 
-function eligibleScoredItems(session) {
-  return session.scoredPool.filter((item) => {
+function eligibleItems(session, pool) {
+  return pool.filter((item) => {
     if (session.asked.has(item.id)) return false;
     const readyAt = session.cooldowns.get(item.id);
     if (readyAt !== undefined && session.questionNumber < readyAt) return false;
     return true;
   });
+}
+
+function eligibleScoredItems(session) {
+  return eligibleItems(session, session.scoredPool);
 }
 
 function isDone(session) {
@@ -92,7 +96,14 @@ function isDone(session) {
 function nextItem(session, templates) {
   const nextQuestionNumber = session.questionNumber + 1;
   if (DECOY_POSITIONS.includes(nextQuestionNumber)) {
-    const availableDecoy = session.decoyPool.find((i) => !session.asked.has(i.id));
+    const eligibleDecoys = eligibleItems(session, session.decoyPool);
+    // A decoy skipped once goes on cooldown, not into `asked`, and its
+    // cooldown (3 questions) clears long before the next fixed decoy slot
+    // (10 questions later) — so once eligible again it would otherwise win
+    // by being first in decoyPool, repeating the same decoy the respondent
+    // already skipped instead of serving one of the 4 untouched ones.
+    const untouchedDecoys = eligibleDecoys.filter((i) => !session.skipCounts.has(i.id));
+    const availableDecoy = (untouchedDecoys.length ? untouchedDecoys : eligibleDecoys)[0];
     if (availableDecoy) return availableDecoy;
   }
   const { selectNextItem } = window.Selection;
